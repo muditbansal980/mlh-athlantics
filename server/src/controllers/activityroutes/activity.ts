@@ -1,0 +1,12 @@
+import { Express } from "express";
+import {Router} from "express";
+const router : Router = Router();
+import { activityvideocontroller,getactivitydata,updateview,activityeditcontroller } from "../../controllers/activity/activity.js";
+import { streakcontroller } from "../../controllers/activity/streak.js";
+import MulterMiddleware from "../../middlewares/multer/multer.js";
+router.post("/upload-activity",MulterMiddleware.single("video"),activityvideocontroller);
+router.get("/streak",streakcontroller);
+router.get("/activitydata",getactivitydata);
+router.post("/updateview",updateview);
+router.patch("/edit/:activityId",activityeditcontroller);
+export default router;

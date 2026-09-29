@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { db } from "../../../db/kysely/kysely.js";
 // import { Database } from "../../kysely/types.js";
 import { LoginSchema } from "../../../zod-validation-schema/schema.js";
-import {setUser} from "../../../service/auth/auth.js";
+import {setUser} from "../../../services/auth/auth.js";
 import bycrypt from "bcrypt";
 
 const authcontroller = async (req: Request, res: Response) => {

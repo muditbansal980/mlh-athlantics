@@ -4,7 +4,7 @@ import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import apiRoutes from "./routes/apiRoutes.js";
-import authRoutes from "./routes/auth.routes.js";
+import authRoutes from "./routes/authroutes/auth.js";
 import { connectDB } from "./config/db.js";
 
 const app: Express = express();

@@ -1,10 +1,10 @@
-import type { JwtPayload } from 'jsonwebtoken';
+import type { AuthPayload } from '../services/auth/auth.js';
 
 declare global {
   namespace Express {
     interface Request {
-      // Set by authenticateToken after a valid JWT is verified
-      user?: string | JwtPayload;
+      // Set by authMiddleware after a valid JWT is verified
+      user?: AuthPayload;
     }
   }
 }
