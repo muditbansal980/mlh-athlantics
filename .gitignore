@@ -45,3 +45,6 @@ boilerplate-backup/
 
 # Server build output
 server/dist/
+
+# Prisma generated client
+server/src/db/generated/
