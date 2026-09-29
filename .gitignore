@@ -42,3 +42,6 @@ out/
 
 # Local backup of removed boilerplate
 boilerplate-backup/
+
+# Server build output
+server/dist/

@@ -1,16 +1,19 @@
+import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export function authenticateToken(req, res, next) {
+export function authenticateToken(req: Request, res: Response, next: NextFunction): void {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
+    res.status(401).json({ error: 'Access token required' });
+    return;
   }
 
   jwt.verify(token, process.env.JWT_SECRET || 'hackathon-dev-secret-key-change-in-production', (err, user) => {
     if (err) {
-      return res.status(403).json({ error: 'Invalid or expired token' });
+      res.status(403).json({ error: 'Invalid or expired token' });
+      return;
     }
     req.user = user;
     next();
