@@ -1,0 +1,2 @@
+import SidePlankHipLiftupExercise from "@/components/common-pages/exercises/exercisecategoriespages/home-workout/home-workout-categories/side-plank-hip-liftup";
+export default SidePlankHipLiftupExercise;

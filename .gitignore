@@ -34,3 +34,11 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Next.js
+.next/
+out/
+*.tsbuildinfo
+
+# Local backup of removed boilerplate
+boilerplate-backup/

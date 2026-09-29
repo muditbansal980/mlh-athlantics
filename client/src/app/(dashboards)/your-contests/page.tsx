@@ -1,0 +1,2 @@
+import getContestsOrganizedByRespective from "@/components/common-pages/contests/organizedbydashboards/your-contests/contestsorganizedbyrespective";
+export default getContestsOrganizedByRespective;
