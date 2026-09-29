@@ -1,0 +1,4 @@
+redis
+mediapipe
+opencv-python
+requests

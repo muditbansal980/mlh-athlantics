@@ -48,3 +48,8 @@ server/dist/
 
 # Prisma generated client
 server/src/db/generated/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
