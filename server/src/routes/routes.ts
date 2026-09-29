@@ -6,6 +6,10 @@ import authroutes from "./authroutes/auth.js";
 import activityrouter from "./activityroutes/activity.js";
 import userRouter from "./userRoutes/user.js";
 import userdataRouter from "./userdata/userdata.js"
+import internalReportRouter from "./internalroutes/reports.js";
+import internalAuth from "../middlewares/internal/internalAuth.js";
+import dashboardRouter from "./dashboard/player/player.js";
+import leaderboardrouter from "./leaderboardroutes/leaderboard.js";
 router.use("/api/auth", authroutes);
 // router.use("/api/contest",authMiddleware,contestroutes);
 // router.use("/api/admin/org",authMiddleware,authorize,orgrouter);
@@ -19,12 +23,12 @@ router.use("/api/userdata",authMiddleware,userdataRouter);
 // router.use("/api/admin/tasks",authMiddleware,authorize,taskRouter);
 // router.use("/api/tasks",authMiddleware,usertaskRouter);
 // router.use("/api/llm",authMiddleware,llmrouter);
-// router.use("/api/leaderboard",authMiddleware,leaderboardrouter);
+router.use("/api/leaderboard",authMiddleware,leaderboardrouter);
 // router.use("/api/coaches",authMiddleware,coachrouter);
 // router.use("/api/admin/notifications",authMiddleware,authorize,AdminNotificationRouter);
 // router.use("/api/notifications",authMiddleware,NotificationRouter);
-// router.use("/api/internal",internalReportRouter);
-// router.use("/api/dashboard",authMiddleware,dashboardRouter);
+router.use("/api/internal",internalAuth,internalReportRouter);
+router.use("/api/dashboard",authMiddleware,dashboardRouter);
 // router.use("/api/feedback",feedbackrouter);
 
 export default router;
