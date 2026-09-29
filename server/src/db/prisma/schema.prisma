@@ -1,0 +1,431 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  COACH
+  PLAYER
+  ORGANIZATION
+}
+
+// for admin reviewing of user-submitted tasks
+enum TaskStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubmittedStatus {
+  SUBMITTED
+  NOTSUBMITTED
+}
+
+enum AdminTaskStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Define the sports that can be tracked in the system
+enum SportCategory {
+  PUSHUPS
+  RUNNING
+  SQUATS
+  BADMINTON
+  BASKETBALL
+  FOOTBALL
+  CRICKET
+  TUG_OF_WAR
+  WEIGHTLIFTING
+  YOGA
+  SWIMMING
+}
+
+enum ContestFee {
+  Paid
+  Free
+}
+
+enum ContestMode {
+  Online
+  Offline
+  Hybrid
+}
+
+enum ActivityView {
+  PUBLIC
+  PRIVATE
+}
+
+enum CoachProfileView{
+  PUBLIC
+  PRIVATE
+}
+
+enum ContestParticipationType {
+  Individual
+  Team
+}
+
+enum ItemStatus {
+  Available
+  SoldOut
+}
+
+enum ContestStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+}
+
+enum VideoUploadStatus {
+  EMPTY
+  PENDING
+  UPLOADED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  Id                   String                @id @default(uuid())
+  OrganizationId       String? // Nullable foreign key to Organization
+  Organization         Organization?         @relation(fields: [OrganizationId], references: [Id], onDelete: Cascade)
+  Username             String                @unique
+  OAuthUsernames       String? // To store OAuth  usernames those have registered with it (e.g., Google, Facebook) for users who register via social login 
+  Email                String                @unique
+  Password             String
+  Role                 Role
+  CreatedAt            DateTime              @default(now())
+  UpdatedAt            DateTime?             @updatedAt
+  Streak               Streak?
+  FollowingCoaches     Int                   @default(0) // Number of coaches the user is following
+  AccessibleRoles      String[]              @default(["PLAYER"]) // Roles that the user can access (e.g., ["PLAYER", "COACH"])
+  Profile              Profile[]
+  UserXP               XP[]
+  Activities           Activity[]
+  ActivityReports      ActivityReport[]
+  UserTasks            UserTask[]
+  ContestRegistrations ContestRegistration[]
+  Acheivements         Achievements[]
+  Certificates         Certificate[]
+  SocialLinks          SocialLinks[]
+  Notifications        Notifications[]
+  // ContestParticipants ContestParticipant[]
+}
+
+model Organization {
+  Id                String             @id @default(uuid())
+  AppliedBy         String?            @default("") // User ID of the one who applied for org registration
+  Username          String             @unique
+  Email             String             @unique
+  OrganizationName  String
+  Website           String?
+  Description       String
+  VerificationDoc   String
+  Status            VerificationStatus @default(PENDING)
+  ContestsOrganized Contest[]          @relation("ContestsOrganized")
+  CreatedAt         DateTime           @default(now())
+  Role              Role
+  Users             User[]
+  // ContestRegistrations ContestRegistration[]
+}
+
+model Contest {
+  Id                    String                   @id @default(uuid())
+  Title                 String
+  Description           String
+  RegistrationStartDate DateTime
+  RegistrationEndDate   DateTime
+  EventStartDate        DateTime
+  EventEndDate          DateTime?
+  Website               String?
+  OrganizedBy           String // This will store the name of the organizing entity (could be an organization or an individual or admin)
+  CreatedById           String // User ID of the creator (could be an admin, organization representative, or coach)
+  OrganizationId        String?
+  Organization          Organization?            @relation("ContestsOrganized", fields: [OrganizationId], references: [Id], onDelete: Cascade)
+  Mode                  ContestMode
+  Location              String? // Only applicable if Mode is Offline            
+  Fee                   Int // 0 for free, >0 for paid
+  Category              SportCategory?
+  ParticipationType     ContestParticipationType @default(Individual)
+  TeamSize              Int? // Only applicable if ParticipationType is Team
+  Status                ContestStatus            @default(UPCOMING)
+  CreatedAt             DateTime                 @default(now())
+  UpdatedAt             DateTime?                @updatedAt
+  ContestParticipants   ContestRegistration[]
+}
+
+model ContestRegistration {
+  Id String @id @default(uuid())
+
+  RegisteredUserId String
+  User             User   @relation(fields: [RegisteredUserId], references: [Id], onDelete: Cascade)
+
+  RegisteredContestId String
+  Contest             Contest @relation(fields: [RegisteredContestId], references: [Id], onDelete: Cascade)
+
+  OrganizedById String?
+  // User User? @relation(fields:[OrganizedById], references:[Id], onDelete: Cascade)
+
+  RegistrationData Json
+  CreatedAt        DateTime @default(now())
+}
+
+model Store {
+  Id          String     @id @default(uuid())
+  Name        String
+  Description String
+  Price       Float
+  ImageUrl    String
+  ContactInfo String
+  Location    String
+  Category    String
+  Quantity    Int        @default(1)
+  CreatedAt   DateTime   @default(now())
+  CreatedBy   String
+  Status      ItemStatus @default(Available)
+  UpdatedAt   DateTime?  @updatedAt
+  Item        Cart[]
+}
+
+model Cart {
+  Id       String @id @default(uuid())
+  ItemId   String
+  UserId   String
+  Quantity Int
+  Item     Store  @relation(fields: [ItemId], references: [Id], onDelete: Cascade)
+}
+
+model Streak {
+  Id             String    @id @default(uuid())
+  CurrentStreak  Int       @default(0)
+  LongestStreak  Int       @default(0)
+  LastUploadDate DateTime?
+  UpdatedAt      DateTime? @updatedAt
+  CreatedBy      String    @unique
+  User           User      @relation(fields: [CreatedBy], references: [Id], onDelete: Cascade)
+}
+
+model Tasks {
+  Id          String          @id @default(uuid())
+  Title       String
+  Description String
+  Points      Int
+  Status      AdminTaskStatus @default(ACTIVE)
+  CompletedBy Int // Number of users who completed the task
+  CreatedAt   DateTime        @default(now())
+}
+
+// This model tracks which users have attempted which tasks, their submission status, and any associated video URLs or descriptions.
+model UserTask {
+  Id               String            @id @default(uuid())
+  UserId           String
+  User             User              @relation(fields: [UserId], references: [Id])
+  TaskId           String?
+  VideoUrl         String?
+  VideourlStatus   VideoUploadStatus @default(EMPTY) // EMPTY,PENDING,UPLOADED, APPROVED, REJECTED
+  Description      String            @default("")
+  TaskStatus       TaskStatus        @default(PENDING)
+  SubmissionStatus SubmittedStatus   @default(NOTSUBMITTED)
+  CreatedAt        DateTime          @default(now())
+  UpdatedAt        DateTime?         @updatedAt
+
+  @@unique([UserId, TaskId])
+}
+
+model XP {
+  Id             String    @id @default(uuid())
+  UserId         String
+  User           User      @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  IncrementBy    String
+  SportsCategory String    @default("AllSports") // This will be used to categorize the XP based on the sport or activity
+  TotalXP        Int       @default(0)
+  CreatedAt      DateTime  @default(now())
+  UpdatedAt      DateTime? @updatedAt
+}
+
+model Activity {
+  Id          String       @id @default(uuid())
+  UserId      String
+  VideoUrl    String
+  PublicId    String
+  Duration    Float
+  Title       String?
+  Description String?
+  View        ActivityView @default(PRIVATE)
+  Category    String       @default("") // will update to enum SportCategory later 
+  CreatedAt   DateTime     @default(now())
+  UpdatedAt   DateTime?    @updatedAt
+  User        User         @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  ActivityReports ActivityReport[]
+}
+
+model ActivityReport {
+  Id           String    @id @default(uuid())
+  ActivityId   String    @unique
+  UserId       String
+  Status       String    @default("COMPLETED")
+  AnalysisJson Json
+  ReportJson   Json
+  SummaryText  String    @db.Text
+  CreatedAt    DateTime  @default(now())
+  UpdatedAt    DateTime? @updatedAt
+
+  Activity     Activity  @relation(fields: [ActivityId], references: [Id], onDelete: Cascade)
+  User         User      @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+}
+
+model Profile {
+  Id                        String    @id @default(uuid())
+  UserId                    String    @unique
+  User                      User      @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  DisplayName               String?
+  Headline                  String?
+  Bio                       String?   @db.Text
+  About                     String?   @db.Text
+  AvatarUrl                 String?   @default("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80")
+  BannerUrl                 String?   @default("https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=1200&auto=format&fit=crop&q=80")
+  Location                  String?
+  GlobalRank                Int?      @default(0) // this is the rank gained by global contests
+  TotalXP                   Int?      @default(0)
+  TotalPoints               Int?      @default(0)
+  TotalActivities           Int?      @default(0)
+  TotalContestsParticipated Int?      @default(0)
+  TotalContestsWon          Int?      @default(0)
+  CreatedAt                 DateTime  @default(now())
+  UpdatedAt                 DateTime? @updatedAt
+}
+
+model Achievements {
+  Id          String    @id @default(uuid())
+  UserId      String
+  User        User      @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  Title       String
+  Description String?
+  ImageUrls   Json? // To store multiple image URLs related to the achievement
+  CreatedAt   DateTime  @default(now())
+  UpdatedAt   DateTime? @updatedAt
+}
+
+model Certificate {
+  Id          String    @id @default(uuid())
+  UserId      String
+  User        User      @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  Title       String
+  Description String?
+  IssuedBy    String?
+  IssuedDate  DateTime?
+  ImageUrl    String
+  CreatedAt   DateTime  @default(now())
+  UpdatedAt   DateTime? @updatedAt
+}
+
+model SocialLinks {
+  Id       String @id @default(uuid())
+  UserId   String
+  User     User   @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  Platform String
+  Url      String
+}
+
+model Coach {
+  Id              String             @id @default(uuid())
+  AppliedBy       String // User ID of the one who applied for coach registration
+  CoachName       String
+  Email           String             @unique
+  Description     String?
+  VerificationDoc String
+  Status          VerificationStatus @default(PENDING)
+  CreatedAt       DateTime           @default(now())
+  Profile         CoachProfile?
+}
+
+model CoachProfile {
+  Id             String             @id @default(uuid())
+  CoachId        String             @unique
+  Coach          Coach              @relation(fields: [CoachId], references: [Id], onDelete: Cascade)
+  CoachName      String
+  Bio            String?
+  AvatarUrl      String?            @default("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80")
+  Description    String?
+  Experience     String?
+  View          CoachProfileView?   @default(PRIVATE)
+  Certifications String?
+  Followers      Int                @default(0)
+  // SocialLinks    Json?     // To store multiple social media links related to the coach
+  Location       String?
+  BannerUrl      String?            @default("https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=1200&auto=format&fit=crop&q=80")
+  CreatedAt      DateTime           @default(now())
+  UpdatedAt      DateTime?          @updatedAt
+  SocialLinks    CoachSocialLinks[]
+  Specializations CoachSpecialization[]
+  CoachContacts   CoachContacts[]
+}
+
+model CoachContacts {
+  Id   String @id @default(uuid())
+  CoachId String
+  Coach   CoachProfile @relation(fields: [CoachId], references: [CoachId],onDelete: Cascade)
+  Label String
+  Value String
+}
+model CoachSocialLinks {
+  Id       String       @id @default(uuid())
+  CoachId  String
+  Coach    CoachProfile @relation(fields: [CoachId], references: [CoachId], onDelete: Cascade)
+  Platform String
+  Url      String
+  Tag      String?  @default("Link")// Optional: To store a tag or label for the social link (e.g., "Instagram", "LinkedIn")
+}
+
+model CoachSpecialization{
+  Id          String    @id @default(uuid())
+  CoachId     String
+  Coach       CoachProfile @relation(fields: [CoachId], references: [CoachId], onDelete: Cascade)
+  Specialization String? 
+  CreatedAt   DateTime  @default(now())
+  UpdatedAt   DateTime? @updatedAt
+}
+
+
+model Notifications {
+  Id         String    @id @default(uuid())
+  ReceiverId String
+  SenderId   String? // Optional: ID of the user who sent the notification (if applicable) 
+  User       User      @relation(fields: [ReceiverId], references: [Id], onDelete: Cascade)
+  Title      String    @default("Greetings from Athlantics") // Default title for notifications
+  Message    String    @default("Thank you for being a part of our community! We appreciate your engagement and look forward to your continued participation.") // Default message for notifications
+  IsRead     Boolean   @default(false)
+  CreatedAt  DateTime  @default(now())
+  UpdatedAt  DateTime? @updatedAt
+}
+
+model Feedbacks{
+  Id String @id @default(uuid())
+  Feedback String
+  CreatedAt DateTime @default(now())
+}
+
+model Following{
+  Id String @id @default(uuid())
+  FollowerId String
+  FollowingId String
+  CreatedAt DateTime @default(now())
+}
