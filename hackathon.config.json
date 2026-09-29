@@ -1,0 +1,21 @@
+{
+  "projectName": "mlh-athlantics",
+  "teamName": "Team Catalyst",
+  "tagline": "Leetcode  for sports",
+  "teamMembers": [
+    "Mudit",
+    "Om",
+    "Sameer"
+  ],
+  "problemStatement": "Millions of talented athletes remain undiscovered due to limited visibility, opportunities, and access to unified, verified digital profiles",
+  "frontend": "Next.js 14",
+  "backend": "Express",
+  "database": "PostgreSQL",
+  "authentication": "JWT",
+  "addons": [
+    "Docker setup",
+    "TailwindCSS",
+    "Socket.io"
+  ],
+  "installDeps": true
+}
