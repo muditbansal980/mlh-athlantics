@@ -1,0 +1,30 @@
+import { Express } from "express";
+import {Router} from "express";
+const router : Router = Router();
+import authMiddleware from "../middlewares/authentication/auth.js";
+import authroutes from "./authroutes/auth.js";
+import activityrouter from "./activityroutes/activity.js";
+import userRouter from "./userRoutes/user.js";
+import userdataRouter from "./userdata/userdata.js"
+router.use("/api/auth", authroutes);
+// router.use("/api/contest",authMiddleware,contestroutes);
+// router.use("/api/admin/org",authMiddleware,authorize,orgrouter);
+// router.use("/api/admin/coaches",authMiddleware,authorize,AdminCoachRouter);
+// router.use("/api/orgs",authMiddleware,orgrouter);
+// router.use("/api/store",authMiddleware,storeRouter);
+router.use("/api/activity",authMiddleware,activityrouter);
+// router.use("/api/profile",authMiddleware,profilerouter);
+// router.use("/api/admin/users",authMiddleware,authorize,userRouter);
+router.use("/api/userdata",authMiddleware,userdataRouter);
+// router.use("/api/admin/tasks",authMiddleware,authorize,taskRouter);
+// router.use("/api/tasks",authMiddleware,usertaskRouter);
+// router.use("/api/llm",authMiddleware,llmrouter);
+// router.use("/api/leaderboard",authMiddleware,leaderboardrouter);
+// router.use("/api/coaches",authMiddleware,coachrouter);
+// router.use("/api/admin/notifications",authMiddleware,authorize,AdminNotificationRouter);
+// router.use("/api/notifications",authMiddleware,NotificationRouter);
+// router.use("/api/internal",internalReportRouter);
+// router.use("/api/dashboard",authMiddleware,dashboardRouter);
+// router.use("/api/feedback",feedbackrouter);
+
+export default router;

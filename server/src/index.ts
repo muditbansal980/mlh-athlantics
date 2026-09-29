@@ -1,14 +1,14 @@
 import "dotenv/config";
-import express, { type Express, type Request, type Response } from "express";
+import express, { type Express } from "express";
 import http from "http";
 import cors from "cors";
+import router from "./routes/routes.js";
 import cookieParser from "cookie-parser";
-import apiRoutes from "./routes/apiRoutes.js";
-import authRoutes from "./routes/authroutes/auth.js";
-import { connectDB } from "./config/db.js";
+
+
 
 const app: Express = express();
-const PORT = Number(process.env.PORT) || 5000;
+const PORT = process.env.PORT;
 const server = http.createServer(app);
 
 app.use(express.json());
@@ -17,29 +17,16 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
+app.use("/", router);
 
-// Mount API routes
-app.use("/api", apiRoutes);
-app.use("/api/auth", authRoutes);
-
-// Root informational endpoint
-app.get("/", (_req: Request, res: Response) => {
-  res.json({
-    name: "Hackathon Starter API",
-    message: "Official hackathon boilerplate server active. See /api/health for system status.",
-    docs: "/api/health",
-  });
-});
-
-// Health ping — keeps the deployed backend URL alive by hitting it every 10 minutes.
-// Only runs when HEALTH_PING_URL is set.
-const HEALTH_PING_URL = process.env.HEALTH_PING_URL;
+// Health ping — keeps the backend URL alive by hitting it every 10 minutes
+const HEALTH_PING_URL = "https://api.athlantics.dpdns.org";
 const INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 
-function scheduleHealthPing(url: string): void {
-  const ping = async (): Promise<void> => {
+function scheduleHealthPing() {
+  const ping = async () => {
     try {
-      const res = await fetch(url, { method: "GET" });
+      const res = await fetch(HEALTH_PING_URL, { method: "GET" });
       if (res.ok) {
         console.log(`[health-ping] server responded OK (${res.status})`);
       } else {
@@ -54,13 +41,9 @@ function scheduleHealthPing(url: string): void {
   setInterval(ping, INTERVAL_MS);
 }
 
-async function startServer(): Promise<void> {
-  await connectDB();
-  server.listen(PORT, () => {
-    console.log(`[Server] Listening at http://localhost:${PORT}`);
-    console.log(`[Server] Health check available at http://localhost:${PORT}/api/health`);
-    if (HEALTH_PING_URL) scheduleHealthPing(HEALTH_PING_URL);
-  });
-}
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  scheduleHealthPing();
+});
 
-startServer();
+// tools

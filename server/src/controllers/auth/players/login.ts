@@ -6,7 +6,7 @@ import {setUser} from "../../../services/auth/auth.js";
 import bycrypt from "bcrypt";
 
 const authcontroller = async (req: Request, res: Response) => {
-    const { Email, Password } = req.body;
+    const { Email, Password } = req.body ?? {};
     try {
         const validationResult = LoginSchema.safeParse({ Email, Password });
         if (!validationResult.success) {

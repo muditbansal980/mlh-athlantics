@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../../db/kysely/kysely.js"
-import {updateUserRole} from "../../controllers/user/updateRole.js";
+// import {updateUserRole} from "../../controllers/user/updateRole.js";
 const router: Router = Router();
 
 router.get("/", (req, res) => {
@@ -19,6 +19,6 @@ router.get("/", (req, res) => {
         });
 });
 
-router.patch("/updateRole", updateUserRole);
+// router.patch("/updateRole", updateUserRole);
 
 export default router;

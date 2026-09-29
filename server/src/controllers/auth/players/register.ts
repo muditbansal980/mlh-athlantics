@@ -5,7 +5,7 @@ import bycrypt from "bcrypt";
 import { RegisterSchema } from "../../../zod-validation-schema/schema.js";
 
 const authcontroller = async (req: Request<typeof RegisterSchema>, res: Response) => {
-    const { Username, Email, Password } = req.body;
+    const { Username, Email, Password } = req.body ?? {};
     try {
         const validationResult = RegisterSchema.safeParse({ Username, Email, Password });
         if (!validationResult.success) {
